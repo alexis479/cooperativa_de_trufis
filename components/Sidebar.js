@@ -21,11 +21,38 @@ import {
   TrendDown,
   Scales
 } from "@phosphor-icons/react";
+import { usePermissions } from "@/context/PermissionsContext";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { permisos, loading } = usePermissions();
 
   const isActive = (path) => pathname === path;
+
+  // Si tiene permisos definidos, exigimos que "ver" sea true.
+  // Si no hay permisos cargados (quizás es el admin principal o no tiene rol), por ahora lo dejamos ver todo para no bloquear el sistema.
+  const canView = (moduloId) => {
+    if (Object.keys(permisos).length === 0) return true;
+    return permisos[moduloId]?.ver === true;
+  };
+
+  const menuOperaciones = [
+    { id: "alquileres", path: "/dashboard/alquiler", icon: SteeringWheel, label: "Alquiler de Líneas" },
+    { id: "aportes", path: "/dashboard/aportes", icon: Money, label: "Aportes" },
+    { id: "asistencias", path: "/dashboard/asistencias", icon: CalendarCheck, label: "Asistencia Reunión" },
+    { id: "choferes", path: "/dashboard/choferes", icon: UserList, label: "Choferes" },
+    { id: "gastos", path: "/dashboard/gastos", icon: Receipt, label: "Gastos" },
+    { id: "multas", path: "/dashboard/multas", icon: WarningCircle, label: "Multas" },
+    { id: "prestamos", path: "/dashboard/prestamos", icon: HandCoins, label: "Préstamos" },
+    { id: "proyectos", path: "/dashboard/proyectos", icon: Briefcase, label: "Proyectos" },
+  ].filter(item => canView(item.id));
+
+  const menuAdministracion = [
+    { id: "socios", path: "/dashboard/socios", icon: UsersThree, label: "Socios" },
+    { id: "usuarios", path: "/dashboard/usuarios", icon: UserGear, label: "Usuarios" },
+    { id: "roles", path: "/dashboard/roles", icon: ShieldCheck, label: "Roles y Permisos" },
+    { id: "vehiculos", path: "/dashboard/vehiculos", icon: Van, label: "Vehículos" },
+  ].filter(item => canView(item.id));
 
   return (
     <aside className="w-[260px] bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col h-full transition-colors duration-300">
@@ -47,57 +74,49 @@ export default function Sidebar() {
           Dashboard
         </Link>
 
-        <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-4 mb-2 ml-3">
-          Operaciones
-        </div>
+        {menuOperaciones.length > 0 && (
+          <>
+            <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-4 mb-2 ml-3">
+              Operaciones
+            </div>
+            {menuOperaciones.map((item) => (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors mb-1 ${
+                  isActive(item.path)
+                    ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100"
+                }`}
+              >
+                <item.icon size={20} />
+                {item.label}
+              </Link>
+            ))}
+          </>
+        )}
 
-        {[
-          { path: "/dashboard/alquiler", icon: SteeringWheel, label: "Alquiler de Líneas" },
-          { path: "/dashboard/aportes", icon: Money, label: "Aportes" },
-          { path: "/dashboard/asistencias", icon: CalendarCheck, label: "Asistencia Reunión" },
-          { path: "/dashboard/choferes", icon: UserList, label: "Choferes" },
-          { path: "/dashboard/gastos", icon: Receipt, label: "Gastos" },
-          { path: "/dashboard/multas", icon: WarningCircle, label: "Multas" },
-          { path: "/dashboard/prestamos", icon: HandCoins, label: "Préstamos" },
-          { path: "/dashboard/proyectos", icon: Briefcase, label: "Proyectos" },
-        ].map((item) => (
-          <Link
-            key={item.path}
-            href={item.path}
-            className={`flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors mb-1 ${
-              isActive(item.path)
-                ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100"
-            }`}
-          >
-            <item.icon size={20} />
-            {item.label}
-          </Link>
-        ))}
-
-        <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-4 mb-2 ml-3">
-          Administración
-        </div>
-
-        {[
-          { path: "/dashboard/socios", icon: UsersThree, label: "Socios" },
-          { path: "/dashboard/usuarios", icon: UserGear, label: "Usuarios" },
-          { path: "/dashboard/roles", icon: ShieldCheck, label: "Roles y Permisos" },
-          { path: "/dashboard/vehiculos", icon: Van, label: "Vehículos" },
-        ].map((item) => (
-          <Link
-            key={item.path}
-            href={item.path}
-            className={`flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors mb-1 ${
-              isActive(item.path)
-                ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100"
-            }`}
-          >
-            <item.icon size={20} />
-            {item.label}
-          </Link>
-        ))}
+        {menuAdministracion.length > 0 && (
+          <>
+            <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-4 mb-2 ml-3">
+              Administración
+            </div>
+            {menuAdministracion.map((item) => (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors mb-1 ${
+                  isActive(item.path)
+                    ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100"
+                }`}
+              >
+                <item.icon size={20} />
+                {item.label}
+              </Link>
+            ))}
+          </>
+        )}
 
         <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mt-4 mb-2 ml-3">
           Reportes
