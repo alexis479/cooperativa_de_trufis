@@ -87,21 +87,22 @@ export default function RolesPage() {
 
   const handleTogglePermiso = (modulo, accion) => {
     setPermisos(prev => {
-      const nuevoEstado = { ...prev };
+      const nuevoModulo = { ...prev[modulo] };
       
       // Si se activa editar o eliminar, automáticamente se activa "ver"
-      if ((accion === "editar" || accion === "eliminar") && !nuevoEstado[modulo][accion]) {
-        nuevoEstado[modulo].ver = true;
+      if ((accion === "editar" || accion === "eliminar") && !nuevoModulo[accion]) {
+        nuevoModulo.ver = true;
       }
       
       // Si se desactiva "ver", se desactivan "editar" y "eliminar"
-      if (accion === "ver" && nuevoEstado[modulo].ver) {
-        nuevoEstado[modulo].editar = false;
-        nuevoEstado[modulo].eliminar = false;
+      if (accion === "ver" && nuevoModulo.ver) {
+        nuevoModulo.editar = false;
+        nuevoModulo.eliminar = false;
       }
 
-      nuevoEstado[modulo][accion] = !nuevoEstado[modulo][accion];
-      return nuevoEstado;
+      nuevoModulo[accion] = !nuevoModulo[accion];
+      
+      return { ...prev, [modulo]: nuevoModulo };
     });
   };
 
@@ -129,16 +130,31 @@ export default function RolesPage() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmId) return;
+    try {
+      const { error } = await supabase.from('roles').delete().eq('id', deleteConfirmId);
+      if (error) {
+        console.error("Error BD:", error);
+        alert("No se pudo eliminar el rol: " + error.message);
+      } else {
+        await fetchRoles();
+        setDeleteConfirmId(null);
+      }
+    } catch (err) {
+      console.error("Error JS:", err);
+      alert("Error crítico: " + err.message);
+    }
+  };
+
+  const handleDeleteClick = (id) => {
     if (id === 1) {
       alert("No se puede eliminar el rol de Administrador principal.");
       return;
     }
-    if (confirm("¿Estás seguro de que deseas eliminar este rol? Se desvinculará de los usuarios asociados.")) {
-      const { error } = await supabase.from('roles').delete().eq('id', id);
-      if (!error) fetchRoles();
-      else alert("Error: " + error.message);
-    }
+    setDeleteConfirmId(id);
   };
 
   // Pequeño componente visual para el Toggle Switch
@@ -150,7 +166,7 @@ export default function RolesPage() {
         disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
       } ${checked ? 'bg-amber-500' : 'bg-slate-200 dark:bg-slate-700'}`}
     >
-      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-4.5' : 'translate-x-1'}`} />
+      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-4' : 'translate-x-1'}`} />
     </button>
   );
 
@@ -227,7 +243,7 @@ export default function RolesPage() {
                           </button>
                           {rol.id !== 1 && (
                             <button 
-                              onClick={() => handleDelete(rol.id)}
+                              onClick={() => handleDeleteClick(rol.id)}
                               className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
                             >
                               <Trash size={18} />
@@ -325,6 +341,34 @@ export default function RolesPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden p-6 text-center animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash size={32} weight="fill" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">¿Eliminar Rol?</h2>
+            <p className="text-slate-500 dark:text-slate-400 mb-6 text-sm">
+              Esta acción eliminará el rol y lo desvinculará de cualquier usuario que lo tenga asignado.
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-xl transition-colors"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={confirmDelete}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-xl shadow-lg shadow-red-500/20 transition-colors"
+              >
+                Sí, eliminar
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -19,11 +19,12 @@ export default function GastosPage() {
   const [formData, setFormData] = useState({
     fecha: new Date().toISOString().split('T')[0],
     concepto: "",
+    pago_a: "",
     categoria: "Mantenimiento",
     monto: ""
   });
 
-  const categorias = ["Mantenimiento", "Sueldos", "Servicios Básicos", "Impuestos", "Otros"];
+  const categorias = ["Sueldo", "Mantenimiento", "Servicios", "Otros"];
 
   useEffect(() => {
     fetchSessionAndGastos();
@@ -40,7 +41,7 @@ export default function GastosPage() {
       if (userData) {
         setUserId(userData.id);
       } else {
-        setUserId(1); // Fallback al admin por defecto
+        setUserId(null); // No usar fallback porque la tabla está vacía y da error de llave foránea
       }
     }
 
@@ -58,17 +59,29 @@ export default function GastosPage() {
   const handleOpenModal = (gasto = null) => {
     if (gasto) {
       setEditingId(gasto.id);
+      
+      let conceptoLimpio = gasto.concepto || "";
+      let pagoA = "";
+      
+      if (conceptoLimpio.includes("[Pago a: ")) {
+        const parts = conceptoLimpio.split(" [Pago a: ");
+        conceptoLimpio = parts[0];
+        pagoA = parts[1].replace("]", "");
+      }
+
       setFormData({
-        fecha: gasto.fecha,
-        concepto: gasto.concepto,
-        categoria: gasto.categoria,
-        monto: gasto.monto
+        fecha: gasto.fecha || new Date().toISOString().split('T')[0],
+        concepto: conceptoLimpio,
+        pago_a: pagoA,
+        categoria: gasto.categoria || "Otros",
+        monto: gasto.monto || ""
       });
     } else {
       setEditingId(null);
       setFormData({ 
         fecha: new Date().toISOString().split('T')[0], 
         concepto: "", 
+        pago_a: "",
         categoria: "Mantenimiento", 
         monto: "" 
       });
@@ -84,32 +97,60 @@ export default function GastosPage() {
   const handleSave = async (e) => {
     e.preventDefault();
     
-    const payload = {
-      ...formData,
-      monto: parseFloat(formData.monto),
-      usuario_id: userId
-    };
+    try {
+      const montoNum = parseFloat(formData.monto);
+      if (isNaN(montoNum)) {
+        alert("Por favor, ingresa un monto válido.");
+        return;
+      }
 
-    if (editingId) {
-      const { error } = await supabase.from('gastos').update(payload).eq('id', editingId);
-      if (!error) {
+      const conceptoFinal = formData.pago_a 
+        ? `${formData.concepto} [Pago a: ${formData.pago_a}]` 
+        : formData.concepto;
+
+      const payload = {
+        fecha: formData.fecha,
+        concepto: conceptoFinal,
+        categoria: formData.categoria,
+        monto: montoNum
+      };
+
+      if (userId) {
+        payload.usuario_id = userId;
+      }
+
+      let res;
+      if (editingId) {
+        res = await supabase.from('gastos').update(payload).eq('id', editingId);
+      } else {
+        res = await supabase.from('gastos').insert([payload]);
+      }
+      
+      if (res.error) {
+        alert("Error de base de datos: " + res.error.message);
+      } else {
         handleCloseModal();
-        fetchSessionAndGastos();
-      } else alert("Error: " + error.message);
-    } else {
-      const { error } = await supabase.from('gastos').insert([payload]);
-      if (!error) {
-        handleCloseModal();
-        fetchSessionAndGastos();
-      } else alert("Error: " + error.message);
+        await fetchSessionAndGastos();
+      }
+    } catch (err) {
+      alert("Error inesperado: " + err.message);
     }
   };
 
   const handleDelete = async (id) => {
     if (confirm("¿Estás seguro de que deseas eliminar este gasto?")) {
-      const { error } = await supabase.from('gastos').delete().eq('id', id);
-      if (!error) fetchSessionAndGastos();
-      else alert("Error: " + error.message);
+      try {
+        const { error } = await supabase.from('gastos').delete().eq('id', id);
+        if (error) {
+          console.error("Error al eliminar:", error);
+          alert("Error de base de datos al eliminar: " + error.message);
+        } else {
+          await fetchSessionAndGastos();
+        }
+      } catch (err) {
+        console.error("Error inesperado al eliminar:", err);
+        alert("Error crítico al intentar eliminar: " + err.message);
+      }
     }
   };
 
@@ -134,6 +175,7 @@ export default function GastosPage() {
               <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300">
                 <th className="p-4 pl-6 uppercase tracking-wider text-xs">Fecha</th>
                 <th className="p-4 uppercase tracking-wider text-xs">Concepto / Detalle</th>
+                <th className="p-4 uppercase tracking-wider text-xs">Pago a</th>
                 <th className="p-4 uppercase tracking-wider text-xs">Categoría</th>
                 <th className="p-4 uppercase tracking-wider text-xs">Monto (Bs)</th>
                 <th className="p-4 uppercase tracking-wider text-xs">Registrado por</th>
@@ -167,8 +209,17 @@ export default function GastosPage() {
                         <div className="w-10 h-10 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-500 flex items-center justify-center shrink-0">
                           <Receipt size={20} weight="fill" />
                         </div>
-                        <span className="font-medium text-slate-900 dark:text-slate-100">{gasto.concepto}</span>
+                        <span className="font-medium text-slate-900 dark:text-slate-100">
+                          {gasto.concepto?.includes("[Pago a: ") ? gasto.concepto.split(" [Pago a: ")[0] : gasto.concepto}
+                        </span>
                       </div>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-slate-700 dark:text-slate-300 font-semibold">
+                        {gasto.concepto?.includes("[Pago a: ") 
+                          ? gasto.concepto.split(" [Pago a: ")[1].replace("]", "") 
+                          : (gasto.pago_a || '-')}
+                      </span>
                     </td>
                     <td className="p-4">
                       <span className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm">
@@ -218,6 +269,17 @@ export default function GastosPage() {
                   value={formData.concepto} 
                   onChange={(e) => setFormData({...formData, concepto: e.target.value})} 
                   placeholder="Ej: Compra de material de escritorio..." 
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-transparent text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500" 
+                />
+              </div>
+
+              <div className="mb-5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Pago a (Entidad/Persona)</label>
+                <input 
+                  type="text" 
+                  value={formData.pago_a} 
+                  onChange={(e) => setFormData({...formData, pago_a: e.target.value})} 
+                  placeholder="Ej: Saguapac, CRE, Tienda..." 
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-transparent text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500" 
                 />
               </div>

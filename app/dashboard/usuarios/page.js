@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase";
+import { createClient } from "@supabase/supabase-js";
 import { Plus, PencilSimple, Trash, X, UserGear } from "@phosphor-icons/react";
 
 export default function UsuariosPage() {
@@ -72,25 +73,67 @@ export default function UsuariosPage() {
         fetchUsuarios();
       } else alert("Error: " + error.message);
     } else {
-      const { error } = await supabase.from('usuarios').insert([formData]);
-      if (!error) {
+      // 1. Crear el usuario en la Autenticación de Supabase (sin cerrar la sesión del admin)
+      // Creamos un cliente temporal que no guarda la sesión en la memoria del navegador
+      const authClient = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        { auth: { persistSession: false } }
+      );
+
+      const { data: authData, error: authError } = await authClient.auth.signUp({
+        email: formData.correo,
+        password: formData.contraseña,
+      });
+
+      if (authError) {
+        alert("No se pudo registrar la seguridad del usuario: " + authError.message);
+        return;
+      }
+
+      // 2. Si se creó en Auth, lo guardamos en la tabla pública de usuarios
+      const { error: dbError } = await supabase.from('usuarios').insert([{
+        nombre: formData.nombre,
+        correo: formData.correo,
+        contraseña: formData.contraseña,
+        rol_id: formData.rol_id
+      }]);
+
+      if (!dbError) {
         handleCloseModal();
         fetchUsuarios();
-        alert("Atención: Has creado el usuario en la tabla pública. Sin embargo, para que este usuario pueda INICIAR SESIÓN realmente en la plataforma, debes crearlo también en la sección 'Authentication' del Dashboard de Supabase con el mismo correo y contraseña.");
-      } else alert("Error: " + error.message);
+        alert("¡Éxito! El usuario ha sido creado y ya puede iniciar sesión inmediatamente en la plataforma.");
+      } else {
+        alert("El usuario se creó en Auth pero hubo un error en la tabla: " + dbError.message);
+      }
     }
   };
 
-  const handleDelete = async (id) => {
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmId) return;
+    try {
+      const { error } = await supabase.from('usuarios').delete().eq('id', deleteConfirmId);
+      if (error) {
+        console.error("Error BD:", error);
+        alert("No se pudo eliminar el usuario: " + error.message);
+      } else {
+        await fetchUsuarios();
+        setDeleteConfirmId(null);
+      }
+    } catch (err) {
+      console.error("Error JS:", err);
+      alert("Error crítico: " + err.message);
+    }
+  };
+
+  const handleDeleteClick = (id) => {
     if (id === 1) {
       alert("No se puede eliminar al Administrador principal.");
       return;
     }
-    if (confirm("¿Estás seguro? Nota: Eliminar este usuario no lo borrará de Supabase Authentication, debes borrarlo de ahí manualmente.")) {
-      const { error } = await supabase.from('usuarios').delete().eq('id', id);
-      if (!error) fetchUsuarios();
-      else alert("Error: " + error.message);
-    }
+    setDeleteConfirmId(id);
   };
 
   return (
@@ -109,9 +152,6 @@ export default function UsuariosPage() {
         </button>
       </div>
 
-      <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4 mb-6 text-sm text-amber-800 dark:text-amber-200">
-        <strong>Nota de Seguridad:</strong> Crear un usuario desde aquí solo guarda sus datos en la tabla pública. Para que tengan acceso real, deben registrarse desde el Login o ser añadidos desde Supabase Authentication.
-      </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -165,7 +205,7 @@ export default function UsuariosPage() {
                         </button>
                         {usuario.id !== 1 && (
                           <button 
-                            onClick={() => handleDelete(usuario.id)}
+                            onClick={() => handleDeleteClick(usuario.id)}
                             className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
                           >
                             <Trash size={18} />
@@ -252,6 +292,34 @@ export default function UsuariosPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden p-6 text-center animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash size={32} weight="fill" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">¿Eliminar Usuario?</h2>
+            <p className="text-slate-500 dark:text-slate-400 mb-6 text-sm">
+              Esta acción eliminará al usuario de esta tabla. No borrará su cuenta en Authentication de Supabase (debes hacerlo manualmente).
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-xl transition-colors"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={confirmDelete}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-xl shadow-lg shadow-red-500/20 transition-colors"
+              >
+                Sí, eliminar
+              </button>
+            </div>
           </div>
         </div>
       )}

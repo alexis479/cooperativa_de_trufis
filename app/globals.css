@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --animate-float: float 10s infinite ease-in-out;
@@ -14,6 +15,5 @@
 }
 
 body {
-  background-color: #0f172a;
-  color: #f8fafc;
+  /* removed hardcoded colors to allow tailwind dark mode classes */
 }
