@@ -223,10 +223,9 @@ export default function AlquileresPage() {
                     <td className="p-4">
                       <div className="flex items-center gap-2">
                         <SteeringWheel size={18} className="text-indigo-500" />
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{alquiler.lineas?.nombre || 'N/A'}</span>
-                          <span className="text-xs text-slate-500">{alquiler.tipo_de_linea?.nombre_ruta}</span>
-                        </div>
+                        <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                          {alquiler.tipo_de_linea?.nombre_ruta || 'N/A'}
+                        </span>
                       </div>
                     </td>
                     <td className="p-4 font-bold text-indigo-600 dark:text-indigo-400">
@@ -339,34 +338,19 @@ export default function AlquileresPage() {
                 </select>
               </div>
 
-              {/* Línea y Ruta */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Línea</label>
-                  <select
-                    value={formData.linea_id}
-                    onChange={(e) => setFormData({...formData, linea_id: e.target.value})}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-transparent text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all appearance-none"
-                  >
-                    <option value="" className="dark:bg-slate-800">-- Selecciona --</option>
-                    {lineas.map(l => (
-                      <option key={l.id} value={l.id} className="dark:bg-slate-800">{l.nombre}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Ruta</label>
-                  <select
-                    value={formData.tipo_linea_id}
-                    onChange={(e) => setFormData({...formData, tipo_linea_id: e.target.value})}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-transparent text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all appearance-none"
-                  >
-                    <option value="" className="dark:bg-slate-800">-- Selecciona --</option>
-                    {tiposLinea.map(t => (
-                      <option key={t.id} value={t.id} className="dark:bg-slate-800">{t.nombre_ruta}</option>
-                    ))}
-                  </select>
-                </div>
+              {/* Línea / Ruta */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Línea / Ruta</label>
+                <select
+                  value={formData.tipo_linea_id}
+                  onChange={(e) => setFormData({...formData, tipo_linea_id: e.target.value})}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-transparent text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all appearance-none"
+                >
+                  <option value="" className="dark:bg-slate-800">-- Selecciona --</option>
+                  {tiposLinea.map(t => (
+                    <option key={t.id} value={t.id} className="dark:bg-slate-800">{t.nombre_ruta}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Monto y Fecha inicio */}
