@@ -21,7 +21,7 @@ export default function ProyectosPage() {
     fecha_inicio: new Date().toISOString().split('T')[0],
     fecha_fin: "",
     presupuesto: "",
-    estado: "en_proceso"
+    estado: "pendiente"
   });
 
   useEffect(() => { fetchProyectos(); }, []);
@@ -42,7 +42,7 @@ export default function ProyectosPage() {
         fecha_inicio: proyecto.fecha_inicio ? proyecto.fecha_inicio.split('T')[0] : "",
         fecha_fin: proyecto.fecha_fin ? proyecto.fecha_fin.split('T')[0] : "",
         presupuesto: proyecto.presupuesto || "",
-        estado: proyecto.estado || "en_proceso"
+        estado: proyecto.estado || "pendiente"
       });
     } else {
       setEditingId(null);
@@ -53,17 +53,25 @@ export default function ProyectosPage() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    const payload = { ...formData };
-    if (!payload.fecha_fin) delete payload.fecha_fin;
+
+    // Payload con solo las columnas que existen en la tabla
+    const payload = {
+      nombre: formData.nombre,
+      descripcion: formData.descripcion || null,
+      estado: formData.estado || 'pendiente',
+      presupuesto: formData.presupuesto ? parseFloat(formData.presupuesto) : null,
+      fecha_inicio: formData.fecha_inicio || null,
+      fecha_fin: formData.fecha_fin || null,
+    };
 
     if (editingId) {
       const { error } = await supabase.from('proyectos').update(payload).eq('id', editingId);
       if (!error) { setIsModalOpen(false); fetchProyectos(); }
-      else alert("Error: " + error.message);
+      else alert("Error al actualizar: " + error.message);
     } else {
       const { error } = await supabase.from('proyectos').insert([payload]);
       if (!error) { setIsModalOpen(false); fetchProyectos(); }
-      else alert("Error: " + error.message);
+      else alert("Error al guardar: " + error.message);
     }
   };
 
@@ -77,6 +85,7 @@ export default function ProyectosPage() {
 
   const estadoConfig = {
     en_proceso: { label: "En Proceso", cls: "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400" },
+    activo: { label: "En Proceso", cls: "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400" },
     completado: { label: "Completado", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400" },
     cancelado: { label: "Cancelado", cls: "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400" },
     pendiente: { label: "Pendiente", cls: "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400" },
@@ -214,7 +223,7 @@ export default function ProyectosPage() {
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Estado</label>
                   <select value={formData.estado} onChange={e => setFormData({...formData, estado: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-transparent text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all appearance-none">
                     <option value="pendiente" className="dark:bg-slate-800">Pendiente</option>
-                    <option value="en_proceso" className="dark:bg-slate-800">En Proceso</option>
+                    <option value="activo" className="dark:bg-slate-800">En Proceso</option>
                     <option value="completado" className="dark:bg-slate-800">Completado</option>
                     <option value="cancelado" className="dark:bg-slate-800">Cancelado</option>
                   </select>
