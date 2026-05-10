@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase";
 import { Plus, PencilSimple, Trash, X, Receipt } from "@phosphor-icons/react";
+import { usePermissions } from "@/context/PermissionsContext";
 
 export default function GastosPage() {
   const [gastos, setGastos] = useState([]);
@@ -10,6 +11,10 @@ export default function GastosPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [userId, setUserId] = useState(null);
+
+  const { permisos } = usePermissions();
+  const canEdit = Object.keys(permisos).length === 0 || permisos["gastos"]?.editar === true;
+  const canDelete = Object.keys(permisos).length === 0 || permisos["gastos"]?.eliminar === true;
   
   const [formData, setFormData] = useState({
     fecha: new Date().toISOString().split('T')[0],
@@ -115,13 +120,11 @@ export default function GastosPage() {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Gestión de Gastos</h1>
           <p className="text-slate-500 text-sm mt-1">Control de egresos y compras de la cooperativa</p>
         </div>
-        <button 
-          onClick={() => handleOpenModal()}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-red-500/20 hover:shadow-red-500/40 hover:-translate-y-0.5"
-        >
-          <Plus size={20} weight="bold" />
-          <span>Nuevo Gasto</span>
-        </button>
+        {canEdit && (
+          <button onClick={() => handleOpenModal()} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-red-500/20 hover:shadow-red-500/40 hover:-translate-y-0.5">
+            <Plus size={20} weight="bold" /><span>Nuevo Gasto</span>
+          </button>
+        )}
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
@@ -134,7 +137,7 @@ export default function GastosPage() {
                 <th className="p-4 uppercase tracking-wider text-xs">Categoría</th>
                 <th className="p-4 uppercase tracking-wider text-xs">Monto (Bs)</th>
                 <th className="p-4 uppercase tracking-wider text-xs">Registrado por</th>
-                <th className="p-4 pr-6 uppercase tracking-wider text-xs text-right">Acciones</th>
+                {(canEdit || canDelete) && <th className="p-4 pr-6 uppercase tracking-wider text-xs text-right">Acciones</th>}
               </tr>
             </thead>
             <tbody>
@@ -178,22 +181,14 @@ export default function GastosPage() {
                     <td className="p-4 text-sm text-slate-500">
                       {gasto.usuarios ? gasto.usuarios.nombre : 'Sistema'}
                     </td>
-                    <td className="p-4 pr-6">
-                      <div className="flex items-center justify-end gap-2">
-                        <button 
-                          onClick={() => handleOpenModal(gasto)}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
-                        >
-                          <PencilSimple size={18} />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(gasto.id)}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-                        >
-                          <Trash size={18} />
-                        </button>
-                      </div>
-                    </td>
+                    {(canEdit || canDelete) && (
+                      <td className="p-4 pr-6">
+                        <div className="flex items-center justify-end gap-2">
+                          {canEdit && <button onClick={() => handleOpenModal(gasto)} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"><PencilSimple size={18} /></button>}
+                          {canDelete && <button onClick={() => handleDelete(gasto.id)} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"><Trash size={18} /></button>}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}
@@ -202,7 +197,7 @@ export default function GastosPage() {
         </div>
       </div>
 
-      {isModalOpen && (
+      {isModalOpen && canEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center p-6 border-b border-slate-200 dark:border-slate-700">

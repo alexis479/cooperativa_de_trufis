@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/utils/supabase";
 import { Plus, PencilSimple, Trash, X, Car } from "@phosphor-icons/react";
+import { usePermissions } from "@/context/PermissionsContext";
 
 export default function VehiculosPage() {
   const [vehiculos, setVehiculos] = useState([]);
@@ -10,7 +11,11 @@ export default function VehiculosPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  
+
+  const { permisos } = usePermissions();
+  const canEdit = Object.keys(permisos).length === 0 || permisos["vehiculos"]?.editar === true;
+  const canDelete = Object.keys(permisos).length === 0 || permisos["vehiculos"]?.eliminar === true;
+
   const [formData, setFormData] = useState({
     placa: "",
     modelo: "",
@@ -102,13 +107,7 @@ export default function VehiculosPage() {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Gestión de Vehículos</h1>
           <p className="text-slate-500 text-sm mt-1">Administra la flota de trufis de la cooperativa</p>
         </div>
-        <button 
-          onClick={() => handleOpenModal()}
-          className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5"
-        >
-          <Plus size={20} weight="bold" />
-          <span>Nuevo Vehículo</span>
-        </button>
+        {canEdit && <button onClick={() => handleOpenModal()} className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:-translate-y-0.5"><Plus size={20} weight="bold" /><span>Nuevo Vehículo</span></button>}
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
@@ -120,7 +119,7 @@ export default function VehiculosPage() {
                 <th className="p-4 uppercase tracking-wider text-xs">Modelo</th>
                 <th className="p-4 uppercase tracking-wider text-xs">Color</th>
                 <th className="p-4 uppercase tracking-wider text-xs">Socio Propietario (Nº Interno)</th>
-                <th className="p-4 pr-6 uppercase tracking-wider text-xs text-right">Acciones</th>
+                {(canEdit || canDelete) && <th className="p-4 pr-6 uppercase tracking-wider text-xs text-right">Acciones</th>}
               </tr>
             </thead>
             <tbody>
@@ -172,22 +171,7 @@ export default function VehiculosPage() {
                         <span className="text-slate-400 italic">Socio no encontrado</span>
                       )}
                     </td>
-                    <td className="p-4 pr-6">
-                      <div className="flex items-center justify-end gap-2">
-                        <button 
-                          onClick={() => handleOpenModal(vehiculo)}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-colors"
-                        >
-                          <PencilSimple size={18} />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(vehiculo.id)}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-                        >
-                          <Trash size={18} />
-                        </button>
-                      </div>
-                    </td>
+                    {(canEdit || canDelete) && (<td className="p-4 pr-6"><div className="flex items-center justify-end gap-2">{canEdit && <button onClick={() => handleOpenModal(vehiculo)} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-colors"><PencilSimple size={18} /></button>}{canDelete && <button onClick={() => handleDelete(vehiculo.id)} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"><Trash size={18} /></button>}</div></td>)}
                   </tr>
                 ))
               )}
@@ -196,7 +180,7 @@ export default function VehiculosPage() {
         </div>
       </div>
 
-      {isModalOpen && (
+      {isModalOpen && canEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center p-6 border-b border-slate-200 dark:border-slate-700">
