@@ -63,20 +63,20 @@ export default function BalanceGeneralPage() {
   return (
     <div className="p-6 space-y-8 bg-slate-50 min-h-screen">
       {/* Encabezado */}
-      <div className="flex flex-wrap justify-between items-start gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Balance General</h1>
-          <p className="text-slate-500 font-medium">Estado financiero consolidado de la cooperativa.</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Balance General</h1>
+          <p className="text-slate-500 font-medium text-sm sm:text-base">Estado financiero consolidado de la cooperativa.</p>
         </div>
         
-        <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="flex items-center gap-2 px-3 border-r border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase">Inicio</span>
-            <input type="date" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} className="bg-transparent border-none focus:ring-0 text-sm font-bold text-slate-700 p-0" />
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm w-full sm:w-auto">
+          <div className="flex items-center gap-2 px-3 sm:border-r border-slate-100">
+            <span className="text-[10px] font-bold text-slate-400 uppercase whitespace-nowrap">Inicio</span>
+            <input type="date" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} className="bg-transparent border-none focus:ring-0 text-sm font-bold text-slate-700 p-0 w-full" />
           </div>
           <div className="flex items-center gap-2 px-3">
-            <span className="text-[10px] font-bold text-slate-400 uppercase">Fin</span>
-            <input type="date" value={fechaFin} onChange={e => setFechaFin(e.target.value)} className="bg-transparent border-none focus:ring-0 text-sm font-bold text-slate-700 p-0" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase whitespace-nowrap">Fin</span>
+            <input type="date" value={fechaFin} onChange={e => setFechaFin(e.target.value)} className="bg-transparent border-none focus:ring-0 text-sm font-bold text-slate-700 p-0 w-full" />
           </div>
         </div>
       </div>

@@ -165,9 +165,9 @@ export default function ReporteIngresosPage() {
       ` }} />
 
       {/* Barra de herramientas - Se oculta al imprimir */}
-      <div className="flex flex-wrap justify-between items-center gap-4 mb-8 bg-slate-900 text-white p-4 rounded-2xl shadow-xl print-hidden no-print">
+      <div className="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-4 mb-8 bg-slate-900 text-white p-4 rounded-2xl shadow-xl print-hidden no-print">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
             <FileText size={24} weight="bold" />
           </div>
           <div>
@@ -176,28 +176,28 @@ export default function ReporteIngresosPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col gap-0.5">
+        <div className="flex flex-wrap items-end gap-3 w-full sm:w-auto">
+          <div className="flex flex-col gap-0.5 flex-1 min-w-[140px]">
             <label className="text-[10px] text-slate-400 font-bold uppercase ml-1">Fecha Inicio</label>
             <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
-              <input type="date" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} className="bg-transparent border-none focus:ring-0 text-sm font-medium text-white cursor-pointer" />
+              <input type="date" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} className="bg-transparent border-none focus:ring-0 text-sm font-medium text-white cursor-pointer w-full" />
             </div>
           </div>
           
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col gap-0.5 flex-1 min-w-[140px]">
             <label className="text-[10px] text-slate-400 font-bold uppercase ml-1">Fecha Fin</label>
             <div className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
-              <input type="date" value={fechaFin} onChange={e => setFechaFin(e.target.value)} className="bg-transparent border-none focus:ring-0 text-sm font-medium text-white cursor-pointer" />
+              <input type="date" value={fechaFin} onChange={e => setFechaFin(e.target.value)} className="bg-transparent border-none focus:ring-0 text-sm font-medium text-white cursor-pointer w-full" />
             </div>
           </div>
 
-          <button onClick={handlePrint} className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 px-4 py-2.5 rounded-xl transition-all font-bold text-sm mt-4">
+          <button onClick={handlePrint} className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 px-4 py-2.5 rounded-xl transition-all font-bold text-sm whitespace-nowrap">
             <Printer size={18} weight="bold" /> Imprimir
           </button>
         </div>
       </div>
 
-      <div className="max-w-[1000px] mx-auto bg-[#f9fbf9] p-8 md:p-12 shadow-2xl border border-slate-200 print:shadow-none print:border-none print:p-4 rounded-sm report-sheet">
+      <div className="max-w-[1000px] mx-auto bg-[#f9fbf9] p-4 md:p-12 shadow-2xl border border-slate-200 print:shadow-none print:border-none print:p-4 rounded-sm report-sheet">
         
         <div className="text-center mb-10 space-y-2 border-b-2 border-emerald-900 pb-6">
           <h2 className="text-emerald-900 text-xl md:text-2xl font-black uppercase tracking-widest">
@@ -244,9 +244,9 @@ export default function ReporteIngresosPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-20 pt-10 text-center signatures-area">
-              <div className="border-t-2 border-slate-900 pt-3 font-black text-slate-900 uppercase">Firma del Tesorero</div>
-              <div className="border-t-2 border-slate-900 pt-3 font-black text-slate-900 uppercase">Firma del Presidente</div>
+            <div className="grid grid-cols-2 gap-6 sm:gap-20 pt-10 text-center signatures-area">
+              <div className="border-t-2 border-slate-900 pt-3 font-black text-slate-900 uppercase text-xs sm:text-sm">Firma del Tesorero</div>
+              <div className="border-t-2 border-slate-900 pt-3 font-black text-slate-900 uppercase text-xs sm:text-sm">Firma del Presidente</div>
             </div>
 
           </div>
@@ -271,7 +271,7 @@ function ReportSection({ title, items, total, type }) {
       <div className="bg-emerald-900 text-white px-4 py-1.5 font-bold uppercase text-[10px] tracking-widest rounded-r-lg inline-block">
         {title}
       </div>
-      <div className="border-2 border-emerald-900/10 rounded-xl overflow-hidden shadow-sm">
+      <div className="border-2 border-emerald-900/10 rounded-xl overflow-x-auto shadow-sm">
         <table className="w-full text-left border-collapse text-[11px]">
           <thead>
             <tr className="bg-emerald-900/5 text-emerald-900 font-black uppercase">
