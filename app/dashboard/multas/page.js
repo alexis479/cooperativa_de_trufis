@@ -190,7 +190,7 @@ export default function MultasPage() {
                       Bs. {multa.monto}
                     </td>
                     <td className="p-4 text-slate-600 dark:text-slate-400">
-                      {new Date(multa.fecha + 'T12:00:00').toLocaleDateString()}
+                      {new Date(multa.fecha.split('T')[0] + 'T12:00:00').toLocaleDateString('es-ES')}
                     </td>
                     <td className="p-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${

@@ -156,7 +156,7 @@ export default function AportesPage() {
                 aportes.map((aporte) => (
                   <tr key={aporte.id} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <td className="p-4 pl-6 font-medium text-slate-600 dark:text-slate-400">
-                      {new Date(aporte.fecha + 'T12:00:00').toLocaleDateString('es-ES')}
+                      {new Date(aporte.fecha.split('T')[0] + 'T12:00:00').toLocaleDateString('es-ES')}
                     </td>
                     <td className="p-4">
                       {aporte.socios ? (
