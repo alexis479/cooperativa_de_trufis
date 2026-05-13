@@ -101,7 +101,7 @@ export default function MultasPage() {
       ...formData,
       motivo: "N/A", 
       linea_id: lineas.length > 0 ? lineas[0].id : null,
-      fecha: new Date(formData.fecha).toISOString()
+      fecha: formData.fecha
     };
 
     // Si linea_id es requerido por la DB pero no hay lineas, enviamos null o lo omitimos y esperamos que pase
@@ -190,7 +190,7 @@ export default function MultasPage() {
                       Bs. {multa.monto}
                     </td>
                     <td className="p-4 text-slate-600 dark:text-slate-400">
-                      {new Date(multa.fecha).toLocaleDateString()}
+                      {new Date(multa.fecha + 'T12:00:00').toLocaleDateString()}
                     </td>
                     <td className="p-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${

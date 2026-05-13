@@ -202,7 +202,7 @@ export default function GastosPage() {
                 gastos.map((gasto) => (
                   <tr key={gasto.id} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <td className="p-4 pl-6 text-slate-600 dark:text-slate-400">
-                      {new Date(gasto.fecha).toLocaleDateString('es-ES')}
+                      {new Date(gasto.fecha + 'T12:00:00').toLocaleDateString('es-ES')}
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
