@@ -171,8 +171,8 @@ function ReportSection({ title, items, total, type }) {
   return (
     <div className="space-y-3">
       <div className="bg-emerald-900 text-white px-4 py-1.5 font-bold uppercase text-[10px] tracking-widest rounded-r-lg inline-block">{title}</div>
-      <div className="border-2 border-emerald-900/10 rounded-xl overflow-x-auto shadow-sm">
-        <table className="w-full min-w-[650px] text-left border-collapse text-[11px]">
+      <div className="border-2 border-emerald-900/10 rounded-xl overflow-x-auto shadow-sm" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <table className="w-full text-left border-collapse text-[11px]" style={{ minWidth: '650px' }}>
           <thead>
             <tr className="bg-emerald-900/5 text-emerald-900 font-black uppercase whitespace-nowrap">
               <th className="p-3 border-b border-emerald-900/20 w-8">Nº</th>
