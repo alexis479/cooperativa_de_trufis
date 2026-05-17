@@ -72,7 +72,7 @@ export default function Sidebar() {
         <div className="p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Mountains weight="fill" size={24} className="text-emerald-500" />
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Coop. Cumbre</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Coop. de Transporte</h2>
           </div>
           <button 
             onClick={closeMobileMenu}

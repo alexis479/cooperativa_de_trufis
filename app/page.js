@@ -104,7 +104,7 @@ export default function LoginPage() {
           </form>
 
           <div className="text-center mt-6 text-sm text-slate-400">
-            <p>Sistema de Gestión Cooperativa Cumbre v2.0</p>
+            <p>Sistema de Gestión Cooperativa de Transporte v2.0</p>
           </div>
         </div>
       </div>

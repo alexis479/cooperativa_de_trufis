@@ -93,7 +93,7 @@ export default function ReporteIngresosPage() {
   const totalIngresos = totalMensual + totalAyuda + totalOtros + totalPrestamos + totalMultas + totalAlquileres;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8 print:bg-white print:p-0">
+    <div className="min-h-screen bg-slate-50 p-0 sm:p-4 md:p-8 print:bg-white print:p-0">
       {/* Estilos específicos para impresión */}
       <style dangerouslySetInnerHTML={{ __html: `
         @page {
@@ -197,11 +197,11 @@ export default function ReporteIngresosPage() {
         </div>
       </div>
 
-      <div className="max-w-[1000px] mx-auto bg-[#f9fbf9] p-4 md:p-12 shadow-2xl border border-slate-200 print:shadow-none print:border-none print:p-4 rounded-sm report-sheet">
+      <div className="max-w-[1000px] mx-auto bg-[#f9fbf9] p-3 sm:p-6 md:p-12 shadow-2xl border border-slate-200 print:shadow-none print:border-none print:p-4 rounded-sm report-sheet">
         
         <div className="text-center mb-10 space-y-2 border-b-2 border-emerald-900 pb-6">
           <h2 className="text-emerald-900 text-xl md:text-2xl font-black uppercase tracking-widest">
-            Cooperativa de Transporte Cumbre de las Américas
+            Cooperativa de Transporte de las Américas
           </h2>
           <div className="inline-block bg-emerald-900 text-white px-6 py-1.5 rounded-full font-bold text-sm tracking-widest uppercase">
             Reporte de Ingresos
@@ -272,9 +272,9 @@ function ReportSection({ title, items, total, type }) {
         {title}
       </div>
       <div className="border-2 border-emerald-900/10 rounded-xl overflow-x-auto shadow-sm">
-        <table className="w-full text-left border-collapse text-[11px]">
+        <table className="w-full min-w-[650px] text-left border-collapse text-[11px]">
           <thead>
-            <tr className="bg-emerald-900/5 text-emerald-900 font-black uppercase">
+            <tr className="bg-emerald-900/5 text-emerald-900 font-black uppercase whitespace-nowrap">
               <th className="p-3 border-b border-emerald-900/20 w-8">Nº</th>
               <th className="p-3 border-b border-emerald-900/20">{type === 'alquiler' ? 'Fecha Inicio' : 'Fecha'}</th>
               <th className="p-3 border-b border-emerald-900/20">{type === 'alquiler' ? 'Dueño (Socio)' : 'Socio / Concepto'}</th>
