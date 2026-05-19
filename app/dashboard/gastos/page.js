@@ -28,7 +28,20 @@ function GastosPageContent() {
   const categorias = ["Sueldo", "Mantenimiento", "Servicios", "Otros"];
 
   const searchParams = useSearchParams();
-  const searchVal = searchParams ? (searchParams.get("search") || "") : "";
+  const [searchVal, setSearchVal] = useState("");
+
+  useEffect(() => {
+    setSearchVal(searchParams?.get("search") || "");
+
+    const handleGlobalSearch = (e) => {
+      setSearchVal(e.detail || "");
+    };
+
+    window.addEventListener("globalSearch", handleGlobalSearch);
+    return () => {
+      window.removeEventListener("globalSearch", handleGlobalSearch);
+    };
+  }, [searchParams]);
 
   const filteredGastos = gastos.filter((gasto) => {
     const term = searchVal.toLowerCase();

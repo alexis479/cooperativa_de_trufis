@@ -107,6 +107,10 @@ function SearchInput() {
       params.delete("search");
     }
     router.replace(`${pathname}?${params.toString()}`);
+
+    // Despachar evento instantáneo para notificar a los componentes de la página
+    const event = new CustomEvent("globalSearch", { detail: term });
+    window.dispatchEvent(event);
   };
 
   return (

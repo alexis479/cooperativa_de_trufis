@@ -25,7 +25,20 @@ function VehiculosPageContent() {
   });
 
   const searchParams = useSearchParams();
-  const searchVal = searchParams ? (searchParams.get("search") || "") : "";
+  const [searchVal, setSearchVal] = useState("");
+
+  useEffect(() => {
+    setSearchVal(searchParams?.get("search") || "");
+
+    const handleGlobalSearch = (e) => {
+      setSearchVal(e.detail || "");
+    };
+
+    window.addEventListener("globalSearch", handleGlobalSearch);
+    return () => {
+      window.removeEventListener("globalSearch", handleGlobalSearch);
+    };
+  }, [searchParams]);
 
   const filteredVehiculos = vehiculos.filter((vehiculo) => {
     const term = searchVal.toLowerCase();
