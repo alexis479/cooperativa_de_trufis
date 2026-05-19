@@ -122,7 +122,7 @@ export default function ReporteEgresosPage() {
 
       <div className="max-w-[1000px] mx-auto bg-[#fffcfc] p-3 sm:p-6 md:p-12 shadow-2xl border border-slate-200 print:shadow-none print:border-none print:p-4 rounded-sm report-sheet">
         <div className="text-center mb-10 space-y-2 border-b-2 border-emerald-900 pb-6">
-          <h2 className="text-emerald-900 text-xl md:text-2xl font-black uppercase tracking-widest">Cooperativa de Transporte de las Américas</h2>
+          <h2 className="text-emerald-900 text-xl md:text-2xl font-black uppercase tracking-widest">Cooperativa de Transporte</h2>
           <div className="inline-block bg-emerald-900 text-white px-6 py-1.5 rounded-full font-bold text-sm tracking-widest uppercase">Reporte de Egresos</div>
           <p className="text-slate-600 font-bold text-sm pt-2 italic">RANGO: {new Date(fechaInicio).toLocaleDateString()} AL {new Date(fechaFin).toLocaleDateString()}</p>
         </div>

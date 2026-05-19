@@ -201,7 +201,7 @@ export default function ReporteIngresosPage() {
         
         <div className="text-center mb-10 space-y-2 border-b-2 border-emerald-900 pb-6">
           <h2 className="text-emerald-900 text-xl md:text-2xl font-black uppercase tracking-widest">
-            Cooperativa de Transporte de las Américas
+            Cooperativa de Transporte
           </h2>
           <div className="inline-block bg-emerald-900 text-white px-6 py-1.5 rounded-full font-bold text-sm tracking-widest uppercase">
             Reporte de Ingresos
