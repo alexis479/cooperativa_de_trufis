@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/utils/supabase";
 import { Plus, PencilSimple, Trash, X, Car } from "@phosphor-icons/react";
 import { usePermissions } from "@/context/PermissionsContext";
 
-export default function VehiculosPage() {
+function VehiculosPageContent() {
   const [vehiculos, setVehiculos] = useState([]);
   const [socios, setSocios] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,6 +22,22 @@ export default function VehiculosPage() {
     modelo: "",
     color: "",
     socio_id: ""
+  });
+
+  const searchParams = useSearchParams();
+  const searchVal = searchParams ? (searchParams.get("search") || "") : "";
+
+  const filteredVehiculos = vehiculos.filter((vehiculo) => {
+    const term = searchVal.toLowerCase();
+    const socioName = vehiculo.socios ? `${vehiculo.socios.nombre} ${vehiculo.socios.apellido}` : '';
+    const interno = vehiculo.socios?.numero_interno || '';
+    return (
+      vehiculo.placa?.toLowerCase().includes(term) ||
+      vehiculo.modelo?.toLowerCase().includes(term) ||
+      vehiculo.color?.toLowerCase().includes(term) ||
+      socioName.toLowerCase().includes(term) ||
+      interno.toString().toLowerCase().includes(term)
+    );
   });
 
   useEffect(() => {
@@ -138,8 +155,14 @@ export default function VehiculosPage() {
                     No hay vehículos registrados.
                   </td>
                 </tr>
+              ) : filteredVehiculos.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-slate-500">
+                    No se encontraron vehículos con esa búsqueda.
+                  </td>
+                </tr>
               ) : (
-                vehiculos.map((vehiculo) => (
+                filteredVehiculos.map((vehiculo) => (
                   <tr key={vehiculo.id} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <td className="p-4 pl-6">
                       <div className="flex items-center gap-3">
@@ -237,5 +260,17 @@ export default function VehiculosPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function VehiculosPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
+      </div>
+    }>
+      <VehiculosPageContent />
+    </Suspense>
   );
 }

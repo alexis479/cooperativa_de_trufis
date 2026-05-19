@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/utils/supabase";
 import { Plus, PencilSimple, Trash, X } from "@phosphor-icons/react";
 import { usePermissions } from "@/context/PermissionsContext";
 
-export default function SociosPage() {
+function SociosPageContent() {
   const [socios, setSocios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,6 +24,20 @@ export default function SociosPage() {
     telefono: "",
     numero_interno: "",
     estado: "activo"
+  });
+
+  const searchParams = useSearchParams();
+  const searchVal = searchParams ? (searchParams.get("search") || "") : "";
+
+  const filteredSocios = socios.filter((socio) => {
+    const term = searchVal.toLowerCase();
+    return (
+      socio.nombre?.toLowerCase().includes(term) ||
+      socio.apellido?.toLowerCase().includes(term) ||
+      socio.ci?.toLowerCase().includes(term) ||
+      socio.telefono?.toLowerCase().includes(term) ||
+      socio.numero_interno?.toString().toLowerCase().includes(term)
+    );
   });
 
   useEffect(() => {
@@ -133,8 +148,12 @@ export default function SociosPage() {
                 <tr>
                   <td colSpan="6" className="p-8 text-center text-slate-500">No hay socios registrados.</td>
                 </tr>
+              ) : filteredSocios.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="p-8 text-center text-slate-500">No se encontraron socios con esa búsqueda.</td>
+                </tr>
               ) : (
-                socios.map((socio) => (
+                filteredSocios.map((socio) => (
                   <tr key={socio.id} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <td className="p-4 pl-6 font-bold text-slate-700 dark:text-slate-300">
                       {socio.numero_interno ? `#${socio.numero_interno}` : '-'}
@@ -250,5 +269,17 @@ export default function SociosPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SociosPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
+      </div>
+    }>
+      <SociosPageContent />
+    </Suspense>
   );
 }

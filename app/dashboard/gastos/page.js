@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/utils/supabase";
 import { Plus, PencilSimple, Trash, X, Receipt } from "@phosphor-icons/react";
 import { usePermissions } from "@/context/PermissionsContext";
 
-export default function GastosPage() {
+function GastosPageContent() {
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,6 +26,25 @@ export default function GastosPage() {
   });
 
   const categorias = ["Sueldo", "Mantenimiento", "Servicios", "Otros"];
+
+  const searchParams = useSearchParams();
+  const searchVal = searchParams ? (searchParams.get("search") || "") : "";
+
+  const filteredGastos = gastos.filter((gasto) => {
+    const term = searchVal.toLowerCase();
+    const pagoA = gasto.concepto?.includes("[Pago a: ") 
+      ? gasto.concepto.split(" [Pago a: ")[1].replace("]", "") 
+      : (gasto.pago_a || '');
+    const conceptoLimpio = gasto.concepto?.includes("[Pago a: ") 
+      ? gasto.concepto.split(" [Pago a: ")[0] 
+      : gasto.concepto;
+    return (
+      conceptoLimpio?.toLowerCase().includes(term) ||
+      pagoA?.toLowerCase().includes(term) ||
+      gasto.categoria?.toLowerCase().includes(term) ||
+      gasto.monto?.toString().toLowerCase().includes(term)
+    );
+  });
 
   useEffect(() => {
     fetchSessionAndGastos();
@@ -198,8 +218,14 @@ export default function GastosPage() {
                     No hay gastos registrados.
                   </td>
                 </tr>
+              ) : filteredGastos.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="p-8 text-center text-slate-500">
+                    No se encontraron gastos con esa búsqueda.
+                  </td>
+                </tr>
               ) : (
-                gastos.map((gasto) => (
+                filteredGastos.map((gasto) => (
                   <tr key={gasto.id} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <td className="p-4 pl-6 text-slate-600 dark:text-slate-400">
                       {new Date(gasto.fecha.split('T')[0] + 'T12:00:00').toLocaleDateString('es-ES')}
@@ -337,5 +363,17 @@ export default function GastosPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function GastosPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-4 border-red-500/30 border-t-red-500 rounded-full animate-spin"></div>
+      </div>
+    }>
+      <GastosPageContent />
+    </Suspense>
   );
 }

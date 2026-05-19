@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { MagnifyingGlass, Moon, Sun, Bell, List } from "@phosphor-icons/react";
 import { supabase } from "@/utils/supabase";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useMobileMenu } from "@/context/MobileMenuContext";
+import { Suspense } from "react";
 
 export default function Header() {
   const [theme, setTheme] = useState("dark");
@@ -49,14 +50,14 @@ export default function Header() {
         >
           <List size={24} />
         </button>
-        <div className="hidden lg:flex items-center bg-slate-50 dark:bg-slate-900 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 w-72 transition-colors duration-300">
-          <MagnifyingGlass size={20} className="text-slate-400 mr-2" />
-          <input
-            type="text"
-            placeholder="Buscar..."
-            className="bg-transparent border-none outline-none w-full text-sm text-slate-800 dark:text-slate-200"
-          />
-        </div>
+        <Suspense fallback={
+          <div className="hidden lg:flex items-center bg-slate-50 dark:bg-slate-900 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 w-72">
+            <MagnifyingGlass size={20} className="text-slate-400 mr-2" />
+            <div className="text-slate-400 text-xs">Cargando buscador...</div>
+          </div>
+        }>
+          <SearchInput />
+        </Suspense>
       </div>
 
       <div className="flex items-center gap-5">
@@ -85,5 +86,42 @@ export default function Header() {
         </div>
       </div>
     </header>
+  );
+}
+
+function SearchInput() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    setSearchQuery(searchParams?.get("search") || "");
+  }, [searchParams]);
+
+  const handleSearchChange = (term) => {
+    const params = new URLSearchParams(searchParams?.toString() || "");
+    if (term) {
+      params.set("search", term);
+    } else {
+      params.delete("search");
+    }
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
+  return (
+    <div className="hidden lg:flex items-center bg-slate-50 dark:bg-slate-900 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 w-72 transition-colors duration-300">
+      <MagnifyingGlass size={20} className="text-slate-400 mr-2" />
+      <input
+        type="text"
+        placeholder="Buscar..."
+        value={searchQuery}
+        onChange={(e) => {
+          setSearchQuery(e.target.value);
+          handleSearchChange(e.target.value);
+        }}
+        className="bg-transparent border-none outline-none w-full text-sm text-slate-800 dark:text-slate-200"
+      />
+    </div>
   );
 }

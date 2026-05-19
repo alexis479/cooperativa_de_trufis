@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/utils/supabase";
 import { Plus, PencilSimple, Trash, X } from "@phosphor-icons/react";
 import { usePermissions } from "@/context/PermissionsContext";
 
-export default function MultasPage() {
+function MultasPageContent() {
   const [multas, setMultas] = useState([]);
   const [tiposMulta, setTiposMulta] = useState([]);
   const [infractores, setInfractores] = useState([]);
@@ -25,6 +26,20 @@ export default function MultasPage() {
     fecha: new Date().toISOString().split('T')[0],
     estado: "pendiente",
     tipo_de_multa_id: ""
+  });
+
+  const searchParams = useSearchParams();
+  const searchVal = searchParams ? (searchParams.get("search") || "") : "";
+
+  const filteredMultas = multas.filter((multa) => {
+    const term = searchVal.toLowerCase();
+    const tipo = multa.tipo_de_multa?.descripcion || '';
+    return (
+      multa.nombre?.toLowerCase().includes(term) ||
+      tipo.toLowerCase().includes(term) ||
+      multa.monto?.toString().toLowerCase().includes(term) ||
+      multa.estado?.toLowerCase().includes(term)
+    );
   });
 
   useEffect(() => {
@@ -177,8 +192,12 @@ export default function MultasPage() {
                 <tr>
                   <td colSpan="6" className="p-8 text-center text-slate-500">No hay multas registradas.</td>
                 </tr>
+              ) : filteredMultas.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="p-8 text-center text-slate-500">No se encontraron multas con esa búsqueda.</td>
+                </tr>
               ) : (
-                multas.map((multa) => (
+                filteredMultas.map((multa) => (
                   <tr key={multa.id} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <td className="p-4 pl-6 font-bold text-slate-700 dark:text-slate-300">
                       {multa.nombre}
@@ -320,5 +339,17 @@ export default function MultasPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MultasPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
+      </div>
+    }>
+      <MultasPageContent />
+    </Suspense>
   );
 }

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/utils/supabase";
 import { Plus, PencilSimple, Trash, X } from "@phosphor-icons/react";
 import { usePermissions } from "@/context/PermissionsContext";
 
-export default function ChoferesPage() {
+function ChoferesPageContent() {
   const [choferes, setChoferes] = useState([]);
   const [socios, setSocios] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,6 +23,21 @@ export default function ChoferesPage() {
     ci: "",
     telefono: "",
     socio_id: ""
+  });
+
+  const searchParams = useSearchParams();
+  const searchVal = searchParams ? (searchParams.get("search") || "") : "";
+
+  const filteredChoferes = choferes.filter((chofer) => {
+    const term = searchVal.toLowerCase();
+    const socioName = chofer.socios ? `${chofer.socios.nombre} ${chofer.socios.apellido}` : chofer.nombre_socio;
+    return (
+      chofer.nombre?.toLowerCase().includes(term) ||
+      chofer.apellido?.toLowerCase().includes(term) ||
+      chofer.ci?.toLowerCase().includes(term) ||
+      chofer.telefono?.toLowerCase().includes(term) ||
+      socioName?.toLowerCase().includes(term)
+    );
   });
 
   useEffect(() => {
@@ -158,8 +174,14 @@ export default function ChoferesPage() {
                     No hay choferes registrados.
                   </td>
                 </tr>
+              ) : filteredChoferes.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-slate-500">
+                    No se encontraron choferes con esa búsqueda.
+                  </td>
+                </tr>
               ) : (
-                choferes.map((chofer) => (
+                filteredChoferes.map((chofer) => (
                   <tr key={chofer.id} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <td className="p-4 pl-6 font-medium text-slate-900 dark:text-slate-100">
                       {chofer.nombre} {chofer.apellido}
@@ -250,5 +272,17 @@ export default function ChoferesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ChoferesPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+      </div>
+    }>
+      <ChoferesPageContent />
+    </Suspense>
   );
 }
