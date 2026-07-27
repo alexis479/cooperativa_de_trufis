@@ -9,6 +9,7 @@ const MODULOS = [
   { id: "socios", nombre: "Socios" },
   { id: "choferes", nombre: "Choferes" },
   { id: "vehiculos", nombre: "Vehículos" },
+  { id: "lineas", nombre: "Líneas / Rutas" },
   { id: "aportes", nombre: "Aportes" },
   { id: "alquileres", nombre: "Alquiler de Líneas" },
   { id: "gastos", nombre: "Gastos" },

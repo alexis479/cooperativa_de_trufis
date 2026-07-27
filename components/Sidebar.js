@@ -20,7 +20,8 @@ import {
   TrendUp,
   TrendDown,
   Scales,
-  X
+  X,
+  MapPinLine
 } from "@phosphor-icons/react";
 import { usePermissions } from "@/context/PermissionsContext";
 import { useMobileMenu } from "@/context/MobileMenuContext";
@@ -55,6 +56,7 @@ export default function Sidebar() {
     { id: "usuarios", path: "/dashboard/usuarios", icon: UserGear, label: "Usuarios" },
     { id: "roles", path: "/dashboard/roles", icon: ShieldCheck, label: "Roles y Permisos" },
     { id: "vehiculos", path: "/dashboard/vehiculos", icon: Van, label: "Vehículos" },
+    { id: "lineas", path: "/dashboard/lineas", icon: MapPinLine, label: "Líneas / Rutas" },
   ].filter(item => canView(item.id));
 
   return (
